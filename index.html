@@ -1,0 +1,325 @@
+
+<html >
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Converter</title>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --secondary: #06b6d4;
+      --accent: #8b5cf6;
+      --background: #1e1e2e;
+      --card: #282836;
+      --text: #f8fafc;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, var(--background), #1a1a2e);
+      color: var(--text);
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      background: var(--card);
+      border-radius: 1rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 2rem;
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      padding: 1rem;
+    }
+
+    .upload-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 0.75rem;
+      border: 2px dashed rgba(255, 255, 255, 0.1);
+      margin-bottom: 2rem;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      max-width: 400px;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 0.5rem;
+      border: none;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .convert-jpg {
+      background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+      color: white;
+    }
+
+    .convert-png {
+      background: linear-gradient(45deg, var(--secondary), var(--accent));
+      color: white;
+    }
+
+    .convert-bmp {
+      background: linear-gradient(45deg, #ffcc00, #ff8c00);
+      color: white;
+    }
+
+    .convert-pdf {
+      background: linear-gradient(45deg, #ff5722, #e64a19);
+      color: white;
+    }
+
+    #download-btn {
+      text-decoration: none;
+      display: none;
+    }
+
+    #download-btn button {
+      background: linear-gradient(45deg, #10b981, #059669);
+      color: white;
+    }
+
+    #history {
+      margin-top: 3rem;
+    }
+
+    #history h2 {
+      font-size: 1.8rem;
+      margin-bottom: 1.5rem;
+      color: var(--secondary);
+      text-align: center;
+    }
+
+    .history-item {
+      background: rgba(255, 255, 255, 0.05);
+      margin-bottom: 1rem;
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .history-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateX(4px);
+    }
+
+    .history-item a {
+      color: var(--secondary);
+      text-decoration: none;
+      font-weight: 600;
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      background: rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .history-item a:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .timestamp {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    canvas {
+      display: none;
+    }
+
+    .clear-history {
+      background: linear-gradient(45deg, #ff5c8d, #ff2a68);
+      color: white;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+      }
+
+      .history-item {
+        flex-direction: column;
+        gap: 0.75rem;
+        text-align: center;
+      }
+    }
+  </style>
+  <!-- jsPDF library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>BM DOT LK - Image Converter</h1>
+
+    <div class="upload-section">
+      <input type="file" id="fileInput" accept="image/*">
+      
+      <div class="button-group">
+        <button class="convert-jpg" onclick="convertToJPG()">Convert to JPG</button>
+        <button class="convert-png" onclick="convertToPNG()">Convert to PNG</button>
+        <button class="convert-bmp" onclick="convertToBMP()">Convert to BMP</button>
+        <button class="convert-pdf" onclick="convertToPDF()">Convert to PDF</button>
+      </div>
+
+      <a id="download-btn" href="#" download="converted-image">
+        <button>Download Converted Image</button>
+      </a>
+    </div>
+
+    <div id="history">
+      <h2>Conversion History</h2>
+      <div id="historyList"></div>
+      <button class="clear-history" onclick="clearHistory()">Clear History</button>
+    </div>
+  </div>
+
+  <canvas id="canvas"></canvas>
+
+  <script>
+    let imgElement = new Image();
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
+
+    function saveHistory(dataURL, fileName) {
+      let history = JSON.parse(localStorage.getItem("history")) || [];
+      let timestamp = new Date().toLocaleString();
+      history.push({ dataURL, fileName, timestamp });
+      localStorage.setItem("history", JSON.stringify(history));
+      updateHistoryUI();
+    }
+
+    function updateHistoryUI() {
+      const historyList = document.getElementById("historyList");
+      historyList.innerHTML = '';
+
+      const history = JSON.parse(localStorage.getItem("history")) || [];
+      history.forEach((item, index) => {
+        let div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML = `
+          <span>${item.fileName}</span>
+          <span class="timestamp">Converted on: ${item.timestamp}</span>
+          <a href="${item.dataURL}" download="${item.fileName}">Download</a>
+        `;
+        historyList.appendChild(div);
+      });
+    }
+
+    function clearHistory() {
+      localStorage.removeItem("history");
+      updateHistoryUI();
+    }
+
+    document.getElementById("fileInput").addEventListener("change", (e) => {
+      let file = e.target.files[0];
+      if (file) {
+        let reader = new FileReader();
+        reader.onload = function (event) {
+          imgElement.onload = function () {
+            canvas.width = imgElement.width;
+            canvas.height = imgElement.height;
+            ctx.drawImage(imgElement, 0, 0);
+          };
+          imgElement.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function convertToJPG() {
+      let dataURL = canvas.toDataURL("image/jpeg");
+      const fileName = "converted-image.jpg";
+      document.getElementById("download-btn").href = dataURL;
+      document.getElementById("download-btn").download = fileName;
+      document.getElementById("download-btn").style.display = "block";
+      saveHistory(dataURL, fileName);
+    }
+
+    function convertToPNG() {
+      let dataURL = canvas.toDataURL("image/png");
+      const fileName = "converted-image.png";
+      document.getElementById("download-btn").href = dataURL;
+      document.getElementById("download-btn").download = fileName;
+      document.getElementById("download-btn").style.display = "block";
+      saveHistory(dataURL, fileName);
+    }
+
+    function convertToBMP() {
+      let dataURL = canvas.toDataURL("image/bmp");
+      const fileName = "converted-image.bmp";
+      document.getElementById("download-btn").href = dataURL;
+      document.getElementById("download-btn").download = fileName;
+      document.getElementById("download-btn").style.display = "block";
+      saveHistory(dataURL, fileName);
+    }
+
+    function convertToPDF() {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF();
+      pdf.addImage(canvas.toDataURL("image/png"), "PNG", 10, 10, canvas.width / 5, canvas.height / 5);
+      const pdfData = pdf.output("bloburl");
+      const fileName = "converted-image.pdf";
+      document.getElementById("download-btn").href = pdfData;
+      document.getElementById("download-btn").download = fileName;
+      document.getElementById("download-btn").style.display = "block";
+      saveHistory(pdfData, fileName);
+    }
+
+    window.onload = updateHistoryUI;
+  </script>
+</body>
+</html>
